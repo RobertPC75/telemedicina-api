@@ -147,6 +147,39 @@ app.get('/api/citas/paciente/:cedula', async (req, res) => {
     }
 });
 
+// Ruta para crear una nueva cita
+app.post('/api/citas', async (req, res) => {
+    const { cedula_paciente, cedula_medico, fecha, hora } = req.body;
+
+    // Validar que todos los campos requeridos estén presentes
+    if (!cedula_paciente || !cedula_medico || !fecha || !hora) {
+        return res.status(400).send('Todos los campos son obligatorios');
+    }
+
+    // Combinando fecha y hora en un solo objeto Date
+    const fechaHora = new Date(`${fecha}T${hora}`);
+
+    // Validar que la fecha y hora no sean en el pasado
+    if (fechaHora < new Date()) {
+        return res.status(400).send('La fecha y hora no pueden ser en el pasado');
+    }
+
+    try {
+        // Insertar la nueva cita, con estado "Pendiente" por defecto
+        const result = await pool.query(
+            `INSERT INTO cita (cedula_paciente, cedula_medico, fecha, hora, estado)
+             VALUES ($1, $2, $3, $4, 'Pendiente') RETURNING *;`,
+            [cedula_paciente, cedula_medico, fecha, hora]
+        );
+
+        // Retornar la cita creada
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error('Error al crear cita:', error);
+        res.status(500).send('Error en el servidor');
+    }
+});
+
 
 // Iniciar servidor en el puerto 5000
 app.listen(5000, () => {
