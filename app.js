@@ -124,6 +124,28 @@ app.post('/api/paciente', async (req, res) => {
     }
 });
 
+// Ruta para obtener todas las citas de un paciente por su cédula
+app.get('/api/citas/paciente/:cedula', async (req, res) => {
+    const { cedula } = req.params;
+
+    try {
+        const result = await pool.query(
+            'SELECT * FROM cita WHERE cedula_paciente = $1;', 
+            [cedula]
+        );
+
+        // Verificamos si se encontraron citas
+        if (result.rows.length > 0) {
+            res.json(result.rows);
+        } else {
+            res.status(404).json({ message: 'No se encontraron citas para este paciente.' });
+        }
+    } catch (error) {
+        console.error('Error al obtener citas del paciente:', error);
+        res.status(500).send('Error en el servidor');
+    }
+});
+
 
 // Iniciar servidor en el puerto 5000
 app.listen(5000, () => {
