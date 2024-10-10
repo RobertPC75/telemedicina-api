@@ -54,16 +54,16 @@ app.get('/api/especializaciones', async (req, res) => {
     }
 });
 
-// Endpoint para buscar un médico por su ID
-app.get('/api/medico/:id', async (req, res) => {
-    const id = parseInt(req.params.id); // Obtener el ID del parámetro de la URL
+// Endpoint para buscar un médico por su cédula
+app.get('/api/medico/cedula/:cedula', async (req, res) => {
+    const cedula = req.params.cedula; // Obtener la cédula del parámetro de la URL
 
-    if (isNaN(id)) {
-        return res.status(400).send('El ID debe ser un número válido');
+    if (!cedula) {
+        return res.status(400).send('La cédula es un campo obligatorio');
     }
 
     try {
-        const result = await pool.query('SELECT * FROM Medico WHERE id_medico = $1;', [id]);
+        const result = await pool.query('SELECT * FROM Medico WHERE cedula = $1;', [cedula]);
 
         if (result.rows.length === 0) {
             return res.status(404).send('Médico no encontrado');
@@ -71,10 +71,11 @@ app.get('/api/medico/:id', async (req, res) => {
 
         res.json(result.rows[0]);
     } catch (error) {
-        console.error('Error al obtener médico por ID:', error);
+        console.error('Error al obtener médico por cédula:', error);
         res.status(500).send('Error en el servidor');
     }
 });
+
 
 // Endpoint para buscar un paciente por su cédula
 app.get('/api/paciente/cedula/:cedula', async (req, res) => {
